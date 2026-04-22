@@ -6,7 +6,7 @@ using HarmonyLib;
 using ResoniteModLoader;
 using Rug.Osc;
 
-namespace ExampleMod;
+namespace GabbleXR;
 
 public class GabbleXR : ResoniteMod {
 	internal const string VERSION_CONSTANT = "1.0.0";
@@ -98,8 +98,13 @@ public class GabbleXR : ResoniteMod {
 
 	private class GabbleXRInterface : IInputDriver {
 		public int UpdateOrder => 100;
+		private InputInterface _input = null!;
 		private Eyes? _eyes;
 		private Mouth? _mouth;
+
+		private bool _enabled;
+        private uint _lastUpdate;
+
 
 		private readonly Dictionary<string, float[]> _trackingValues = new(StringComparer.OrdinalIgnoreCase);
 
@@ -127,6 +132,8 @@ public class GabbleXR : ResoniteMod {
 		}
 
 		public void RegisterInputs(InputInterface inputInterface) {
+			_input = inputInterface;
+			// _enabled = _config.GetValue(ModEnabledKey);
 			_eyes = new Eyes(inputInterface, "GabbleXR Eyes", false);
 			var groups = (MouthParameterGroup[])Enum.GetValues(typeof(MouthParameterGroup));
 			_mouth = new Mouth(inputInterface, "GabbleXR Mouth", groups);
@@ -141,10 +148,16 @@ public class GabbleXR : ResoniteMod {
 
 		private void UpdateEyes(float deltaTime) {
 			if (_eyes == null) return;
+			// if (!_enabled || _lastUpdate > 10) {
+            //     _eyes.IsEyeTrackingActive = false;
+            //     _eyes.SetTracking(false);
+            //     return;
+			// }
 
 			_eyes.Timestamp += deltaTime;
-			_eyes.IsEyeTrackingActive = true;
-			_eyes.IsTracking = true;
+			_eyes.IsEyeTrackingActive = _input.VR_Active;
+            _eyes.SetTracking(true);
+
 			_eyes.IsDeviceActive = true;
 
 			UpdateEye(_eyes.LeftEye, "eye/Left");
@@ -160,8 +173,12 @@ public class GabbleXR : ResoniteMod {
 			eye.IsTracking = true;
 			
 			// Direction (fff: horizontal, vertical, unknown)
-			float3 direction = new float3(GetValue($"{prefix}/Direction", 0), GetValue($"{prefix}/Direction", 1), 0f);
-			eye.UpdateWithDirection(direction);
+			// float3 direction = new float3(GetValue($"{prefix}/Direction", 0), GetValue($"{prefix}/Direction", 1), 0f);
+			float x = GetValue($"{prefix}/Direction", 0);
+			float y = GetValue($"{prefix}/Direction", 1);
+			float z = MathX.Sqrt(1f - (x * x + y * y));
+			float3 dir = new float3(x, y, z).Normalized;
+			eye.UpdateWithDirection(dir);
 
 			eye.Openness = GetValue($"{prefix}/Openness");
 			eye.Widen = GetValue($"{prefix}/Widen");
