@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("ExampleMod")]
-[assembly: AssemblyProduct("ExampleMod")]
+[assembly: AssemblyTitle("GabbleXR")]
+[assembly: AssemblyProduct("GabbleXR")]
 [assembly: AssemblyDescription("Description of your mod")]
 [assembly: AssemblyCompany("ExampleAuthor")]
 [assembly: AssemblyCopyright("Copyright © 2026 ExampleAuthor")]
