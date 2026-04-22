@@ -5,5 +5,5 @@
 [assembly: AssemblyDescription("Description of your mod")]
 [assembly: AssemblyCompany("ExampleAuthor")]
 [assembly: AssemblyCopyright("Copyright © 2026 ExampleAuthor")]
-[assembly: AssemblyVersion(ExampleMod.ExampleMod.VERSION_CONSTANT)]
-[assembly: AssemblyFileVersion(ExampleMod.ExampleMod.VERSION_CONSTANT)]
+[assembly: AssemblyVersion(ExampleMod.GabbleXR.VERSION_CONSTANT)]
+[assembly: AssemblyFileVersion(ExampleMod.GabbleXR.VERSION_CONSTANT)]
