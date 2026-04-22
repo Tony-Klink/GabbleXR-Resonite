@@ -102,10 +102,6 @@ public class GabbleXR : ResoniteMod {
 		private Eyes? _eyes;
 		private Mouth? _mouth;
 
-		private bool _enabled;
-        private uint _lastUpdate;
-
-
 		private readonly Dictionary<string, float[]> _trackingValues = new(StringComparer.OrdinalIgnoreCase);
 
 		public void SetTrackingValues(string path, float[] values) {
@@ -133,7 +129,6 @@ public class GabbleXR : ResoniteMod {
 
 		public void RegisterInputs(InputInterface inputInterface) {
 			_input = inputInterface;
-			// _enabled = _config.GetValue(ModEnabledKey);
 			_eyes = new Eyes(inputInterface, "GabbleXR Eyes", false);
 			var groups = (MouthParameterGroup[])Enum.GetValues(typeof(MouthParameterGroup));
 			_mouth = new Mouth(inputInterface, "GabbleXR Mouth", groups);
@@ -142,21 +137,24 @@ public class GabbleXR : ResoniteMod {
 		public void UpdateInputs(float deltaTime) {
 			if (_eyes == null || _mouth == null) return;
 
-			UpdateEyes(deltaTime);
-			UpdateMouth();
+			bool enabled = _config?.GetValue(ModEnabledKey) ?? true;
+
+			UpdateEyes(deltaTime, enabled);
+			UpdateMouth(enabled);
 		}
 
-		private void UpdateEyes(float deltaTime) {
+		private void UpdateEyes(float deltaTime, bool enabled) {
 			if (_eyes == null) return;
-			// if (!_enabled || _lastUpdate > 10) {
-            //     _eyes.IsEyeTrackingActive = false;
-            //     _eyes.SetTracking(false);
-            //     return;
-			// }
+
+			if (!enabled) {
+				_eyes.IsEyeTrackingActive = false;
+				_eyes.SetTracking(false);
+				return;
+			}
 
 			_eyes.Timestamp += deltaTime;
 			_eyes.IsEyeTrackingActive = _input.VR_Active;
-            _eyes.SetTracking(true);
+			_eyes.SetTracking(true);
 
 			_eyes.IsDeviceActive = true;
 
@@ -172,8 +170,6 @@ public class GabbleXR : ResoniteMod {
 			eye.IsDeviceActive = true;
 			eye.IsTracking = true;
 			
-			// Direction (fff: horizontal, vertical, unknown)
-			// float3 direction = new float3(GetValue($"{prefix}/Direction", 0), GetValue($"{prefix}/Direction", 1), 0f);
 			float x = GetValue($"{prefix}/Direction", 0);
 			float y = GetValue($"{prefix}/Direction", 1);
 			float z = MathX.Sqrt(1f - (x * x + y * y));
@@ -189,8 +185,14 @@ public class GabbleXR : ResoniteMod {
 			eye.OuterBrowVertical = GetValue($"{prefix}/OuterBrowVertical");
 		}
 
-		private void UpdateMouth() {
+		private void UpdateMouth(bool enabled) {
 			if (_mouth == null) return;
+
+			if (!enabled) {
+				_mouth.IsTracking = false;
+				_mouth.IsDeviceActive = false;
+				return;
+			}
 
 			_mouth.IsTracking = true;
 			_mouth.IsDeviceActive = true;
